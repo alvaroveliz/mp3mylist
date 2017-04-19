@@ -2,17 +2,35 @@
   "name": "mp3mylist",
   "version": "1.0.0",
   "description": "Download your Spotify List into mp3 format",
-  "main": "main.js",
+  "main": "bin/mp3mylist.js",
+  "engines": {
+    "node": ">= 0.10"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "juanito": "bin/juanito.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url" : "git@github.com:alvaroveliz/mp3mylist.git"
+    "url": "git@github.com:alvaroveliz/mp3mylist.git"
   },
+  "bugs": {
+    "url": "https://github.com/alvaroveliz/mp3mylist/issues"
+  },
+  "keywords": [
+    "spotify",
+    "youtube",
+    "playlist",
+    "download"
+  ],
   "author": "alvaroveliz <alvaro.veliz@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "commander": "^2.9.0",
+    "open": "0.0.5",
     "spotify-web-api-node": "^2.3.6"
   }
 }
