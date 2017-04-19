@@ -1,0 +1,18 @@
+{
+  "name": "mp3mylist",
+  "version": "1.0.0",
+  "description": "Download your Spotify List into mp3 format",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url" : "git@github.com:alvaroveliz/mp3mylist.git"
+  },
+  "author": "alvaroveliz <alvaro.veliz@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "spotify-web-api-node": "^2.3.6"
+  }
+}
