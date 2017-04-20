@@ -19,50 +19,71 @@ var spotifyApi = new SpotifyWebApi({
     redirectUri: params.spotify.redirectUri
 });
 
-var authorizeURL = spotifyApi.createAuthorizeURL(scopes);
+if (params.spotify.accessToken == true) {
+    console.log('> Updating access token');
+    spotifyApi.refreshAccessToken()
+        .then(function(data) {
+            console.log('The access token has been refreshed!');
 
-console.log('> Opening default browser');
-open(authorizeURL);
+            var accessToken = data.body['access_token'];
+            fs.exists(paramsFile, function(exists) {
+                if (exists) {
+                    params.spotify['accessToken'] = accessToken;
+                    var json = JSON.stringify(params);
+                    fs.writeFile(paramsFile, json);
+                } else {
+                    console.log('File doesnt exists. Create and configure params.json file and try again.');
+                }
+            });
+        }, function(err) {
+            console.log('Could not refresh access token', err);
+        });
 
-console.log('> Starting local server at : ' + params.spotify.redirectUri);
-var server = http.createServer();
-server.on('request', function(request, response) {
-    var urlParts = url.parse(request.url, true);
-    var urlParams = urlParts.query;
-    var urlPath = urlParts.pathname;
+} else {
+    var authorizeURL = spotifyApi.createAuthorizeURL(scopes);
 
-    if (request.method === 'GET' && urlPath === '/callback/' && typeof urlParams.code != 'undefined') {
-        // AccessToken
-        spotifyApi
-            .authorizationCodeGrant(urlParams.code)
-            .then(function(data) {
-                var accessToken = data.body['access_token'];
+    console.log('> Opening default browser');
+    open(authorizeURL);
 
-                fs.exists(paramsFile, function(exists){
-                    if (exists) {
-                        params.spotify['accessToken'] = accessToken;
-                        var json = JSON.stringify(params);
-                        fs.writeFile(paramsFile, json);
-                    } else {
-                        console.log('File doesnt exists. Create and configure params.json file and try again.');
-                    }
+    console.log('> Starting local server at : ' + params.spotify.redirectUri);
+    var server = http.createServer();
+    server.on('request', function(request, response) {
+        var urlParts = url.parse(request.url, true);
+        var urlParams = urlParts.query;
+        var urlPath = urlParts.pathname;
+
+        if (request.method === 'GET' && urlPath === '/callback/' && typeof urlParams.code != 'undefined') {
+            // AccessToken
+            spotifyApi
+                .authorizationCodeGrant(urlParams.code)
+                .then(function(data) {
+                    var accessToken = data.body['access_token'];
+
+                    fs.exists(paramsFile, function(exists) {
+                        if (exists) {
+                            params.spotify['accessToken'] = accessToken;
+                            var json = JSON.stringify(params);
+                            fs.writeFile(paramsFile, json);
+                        } else {
+                            console.log('File doesnt exists. Create and configure params.json file and try again.');
+                        }
+                    });
+
+                    setTimeout(function() {
+                        console.log('> Stopping server.');
+                        process.exit();
+                    }, 5000);
+
+                }, function(err) {
+                    console.log('Something went wrong!', err);
+                    process.exit();
                 });
 
-
-                setTimeout(function() {
-                    console.log('> Stopping server.');
-                    process.exit();
-                }, 5000);
-
-            }, function(err) {
-                console.log('Something went wrong!', err);
-                process.exit();
-            });
-
-        response.end('<html><body><p>Code saved. This server will close in 5 seconds.</body></html>');
-    } else {
-        response.statusCode = 404;
-        response.end('<html><body><h1>Something was wrong. Try again.</h1></body></html>');
-        process.exit();
-    }
-}).listen(3333);
+            response.end('<html><body><p>Code saved. This server will close in 5 seconds.</body></html>');
+        } else {
+            response.statusCode = 404;
+            response.end('<html><body><h1>Something was wrong. Try again.</h1></body></html>');
+            process.exit();
+        }
+    }).listen(3333);
+}
